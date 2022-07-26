@@ -1,0 +1,19 @@
+- hosts: localhost
+  vars:
+    ImageName: ""
+    Namespace: ""
+    imageTag: ""
+  gather_facts: no
+  connection: local
+  tasks:
+    - name: Create Namespace {{ Namespace }}
+      command: "/usr/local/bin/kubectl create namespace {{ Namespace }}"
+      ignore_errors: yes
+    - name: Deploy Wordpress
+      command: "/usr/local/bin/helm install --name=wordpress-{{ Namespace }} --namespace={{ Namespace }} ../wordpress-k8s --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }}"
+      delegate_to: localhost
+      ignore_errors: yes
+    - name: Update Wordpress
+      command: "/usr/local/bin/helm upgrade --wait --recreate-pods --namespace={{ Namespace }} --set image.repository={{ ImageName }} --set image.tag={{ imageTag }} --set namespace={{ Namespace }} wordpress-{{ Namespace }} ../wordpress-k8s"
+      delegate_to: localhost
+      ignore_errors: yes
